@@ -54,16 +54,15 @@ EnglishCoach 2.0 is a web-based application designed to help users improve their
 To run this project locally, follow these steps:
 
 1. Clone the repository:
-
    ```bash
    git clone https://github.com/your-username/englishcoach-2.0.git
-
+   
 2.Navigate to the project directory:
-cd englishcoach-2.0
+
+   cd englishcoach-2.0
 
 3.Install the required dependencies:
-
-pip install -r requirements.txt
+     pip install -r requirements.txt
 
 4.Run the Streamlit app:
 streamlit run app.py
