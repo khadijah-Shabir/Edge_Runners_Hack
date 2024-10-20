@@ -112,10 +112,9 @@ def display_writing_plan(plan_days, topics):
             input_text = user_input
 
             corrector = GrammarCorrector()
-            corrector.report_mistakes(input_text)
-
+           
             # Initialize the client with your API key
-            retrieved_content = "I am A1 user"
+            retrieved_content = "I want you to improve my writing and provide me all the mistakes i did. Also provide me the improved version of my writing"
 
             # Use the retrieved content as context for the chat completion
             chat_completion = client.chat.completions.create(
