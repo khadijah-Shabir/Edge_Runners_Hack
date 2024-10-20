@@ -1,19 +1,8 @@
 # Import libraries
-import whisper
 import os
 from gtts import gTTS
 import streamlit as st
 from groq import Groq
-
-# Attempt to load Whisper model for transcription with error handling
-try:
-    if hasattr(whisper, 'load_model'):
-        model = whisper.load_model("base")
-    else:
-        raise AttributeError("The load_model method is not available in the whisper module.")
-except Exception as e:  # Catch all exceptions
-    st.error(f"Error loading Whisper model: {e}")
-    model = None  # Handle the case when model loading fails
 
 # Set up Groq API client (ensure GROQ_API_KEY is set in your environment)
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
@@ -32,37 +21,33 @@ def text_to_speech(text, output_audio="output_audio.mp3"):
     tts.save(output_audio)
     return output_audio
 
-# Main chatbot function to handle audio input and output
-def chatbot(audio):
-    if model is None:
-        return "Model not available", None
+# Main chatbot function to handle user input and output
+def chatbot(user_input):
+    # Step 1: Get LLM response from Groq
+    response_text = get_llm_response(user_input)
 
-    # Step 1: Transcribe the audio using Whisper
-    result = model.transcribe(audio)
-    user_text = result["text"]
-
-    # Step 2: Get LLM response from Groq
-    response_text = get_llm_response(user_text)
-
-    # Step 3: Convert the response text to speech
+    # Step 2: Convert the response text to speech
     output_audio = text_to_speech(response_text)
 
     return response_text, output_audio
 
 # Streamlit UI setup
-st.title("Audio Chatbot")
+st.title("Text Chatbot")
 
-# Upload audio file
-audio_file = st.file_uploader("Upload an audio file", type=["wav", "mp3"])
+# Text input for user
+user_input = st.text_area("Enter your message:", height=150)
 
-if audio_file is not None:
-    # Process the uploaded audio file
-    response_text, output_audio = chatbot(audio_file)
+if st.button("Send"):
+    if user_input:
+        # Process the user input
+        response_text, output_audio = chatbot(user_input)
 
-    # Display the response text
-    st.subheader("Response:")
-    st.write(response_text)
+        # Display the response text
+        st.subheader("Response:")
+        st.write(response_text)
 
-    # Provide the audio output
-    if output_audio:
-        st.audio(output_audio)
+        # Provide the audio output
+        if output_audio:
+            st.audio(output_audio)
+    else:
+        st.warning("Please enter a message.")
