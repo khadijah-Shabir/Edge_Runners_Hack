@@ -10,8 +10,11 @@ from io import BytesIO
 # Initialize the Groq client
 GROQ_AP_KEY="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"
 
-# Load Whisper model
-whisper_model = whisper.load_model("base")
+# Try to load the Whisper model
+try:
+    whisper_model = whisper.load_model("base")
+except Exception as e:
+    st.error(f"Error loading Whisper model: {e}")
 
 # Function to transcribe audio using Whisper
 def transcribe_audio(audio_file):
