@@ -1,11 +1,4 @@
-whisper
-gtts
 streamlit
+openai-whisper
+gtts
 groq
-pydub
-numpy
-scipy
-torch 
-torchvision 
-torchaudio
-
