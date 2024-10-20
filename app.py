@@ -125,8 +125,6 @@ if uploaded_file is not None:
         "role": "system",
         "content": "Example feedback: Summary of Feedback: You have a good basic structure, but there are areas for improvement, particularly in pronunciation and grammar. Detailed Mistake Identification: 1. Pronunciation: The word 'comfortable' was mispronounced as 'com-for-ta-ble' instead of 'comf-ter-bul.' 2. Grammar: You said, 'He don't know,' but it should be 'He doesn't know.' Suggestions for Improvement: Practice saying 'comfortable' slowly, focusing on the middle syllable. Review present tense rules and practice common verbs. Encouragement: Great effort! With a bit of practice, you'll speak more clearly and confidently."
     }
-]
-
     ],
     model="llama3-8b-8192",
 )
