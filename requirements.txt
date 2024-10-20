@@ -1,4 +1,5 @@
 streamlit
-git+https://github.com/openai/whisper.git
-gtts
+pyspellchecker
 groq
+gtts
+audio-recorder-streamlit
