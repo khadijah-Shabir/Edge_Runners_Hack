@@ -9,7 +9,6 @@ from io import BytesIO
 
 # Initialize the Groq client
 GROQ_AP_KEY="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"
-client = Groq(api_key=GROQ_API_KEY)
 
 # Load Whisper model
 whisper_model = whisper.load_model("base")
