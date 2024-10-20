@@ -114,12 +114,12 @@ def display_writing_plan(plan_days, topics):
             corrector = GrammarCorrector()
            
             # Initialize the client with your API key
-            retrieved_content = "I want you to improve my writing and provide me all the mistakes i did. Also provide me the improved version of my writing"
+            retrieved_content = "Please analyze my writing for grammar, cohesion, sentence structure, vocabulary, and the use of simple, complex, and compound sentences, as well as the effectiveness of abstraction, then provide detailed feedback on any mistakes and present an improved version of my writing."
 
             # Use the retrieved content as context for the chat completion
             chat_completion = client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": "You have the change the sentence according to the english standards if needed but add any sentence by yourself just change the input provided to you.If user is of A1 level then retur the output for the begineers A2 for average and A3 for advance"},
+                    {"role": "system", "content": "You are an expert academic writer with 40 years of experience. You have to Analyze the writing for grammar, cohesion, sentence structure, vocabulary, and the use of simple, complex, and compound sentences, as well as the effectiveness of abstraction. Provide detailed feedback on any mistakes and present an improved version of writing."You have the change the sentence according to the english standards if needed but add any sentence by yourself just change the input provided to you.If user is of A1 level then retur the output for the begineers A2 for average and A3 for advance and you can go till C1 level"},
                     {"role": "user", "content": retrieved_content},
                     {"role": "user", "content": input_text},
                 ],
