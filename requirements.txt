@@ -5,3 +5,7 @@ groq
 pydub
 numpy
 scipy
+torch 
+torchvision 
+torchaudio
+
