@@ -57,15 +57,11 @@ To run this project locally, follow these steps:
    ```bash
    git clone https://github.com/your-username/englishcoach-2.0.git
    
-2.Navigate to the project directory:
+2.Navigate to the project directory: cd englishcoach-2.0
 
-   cd englishcoach-2.0
+3.Install the required dependencies:  pip install -r requirements.txt
 
-3.Install the required dependencies:
-     pip install -r requirements.txt
-
-4.Run the Streamlit app:
-streamlit run app.py
+4.Run the Streamlit app: streamlit run app.py
 
 Contributing
 Contributions are welcome! Feel free to submit a pull request or open an issue for any bugs, feature requests, or suggestions.
