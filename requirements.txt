@@ -1,0 +1,7 @@
+whisper
+gtts
+streamlit
+groq
+pydub
+numpy
+scipy
