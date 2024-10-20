@@ -8,7 +8,8 @@ import tempfile
 from audio_recorder_streamlit import audio_recorder
 
 # Initialize the Groq client
-client = Groq(api_key="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")
+api_key=st.secrets['key']
+client = Groq(api_key=api_key)
 
 def transcribe_audio(audio_file):
     # Transcribe audio using Groq's Whisper model
@@ -114,7 +115,6 @@ def display_writing_plan(plan_days, topics):
             corrector.report_mistakes(input_text)
 
             # Initialize the client with your API key
-            client = Groq(api_key="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")
             retrieved_content = "I am A1 user"
 
             # Use the retrieved content as context for the chat completion
