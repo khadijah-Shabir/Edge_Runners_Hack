@@ -3,9 +3,49 @@ import streamlit as st
 from spellchecker import SpellChecker
 from groq import Groq
 import re
+from gtts import gTTS
+import tempfile
+from audio_recorder_streamlit import audio_recorder
 
 # Initialize the Groq client
 client = Groq(api_key="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")
+
+def transcribe_audio(audio_file):
+    # Transcribe audio using Groq's Whisper model
+    with open(audio_file, "rb") as file:
+        transcription = client.audio.transcriptions.create(
+            file=(audio_file, file.read()),
+            model="whisper-large-v3-turbo",
+            prompt="Transcribe spoken English",
+            response_format="json",
+            language="en",
+            temperature=0.0
+        )
+    return transcription.text
+
+def get_feedback(transcription):
+    # Generate feedback using Groq
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a highly experienced Spoken English expert. Your task is to provide detailed feedback on the following transcription from an English learner. Focus on pronunciation, grammar, fluency, vocabulary usage, sentence structure, coherence, cohesion, and intonation. Provide feedback in these sections: Summary of Feedback, Detailed Mistake Identification, Suggestions for Improvement, and Encouragement."
+            },
+            {
+                "role": "user",
+                "content": f"Please provide feedback on the following spoken English: {transcription}"
+            }
+        ],
+        model="llama3-8b-8192",
+    )
+    return chat_completion.choices[0].message.content
+
+def text_to_speech(text):
+    # Convert feedback text to speech
+    tts = gTTS(text=text, lang='en')
+    tts.save("feedback_audio.mp3")
+    return "feedback_audio.mp3"
+
 class GrammarCorrector:
     def __init__(self):
         self.spell = SpellChecker()
@@ -24,7 +64,7 @@ class GrammarCorrector:
 
         return mistakes
 
-    def report_mistakes(self, text):
+def report_mistakes(self, text):
         mistakes = self.identify_mistakes(text)
         st.write("\n--- Spelling Mistakes Found ---")
         for i, (mistake, start, end) in enumerate(mistakes, start=1):
@@ -33,8 +73,8 @@ class GrammarCorrector:
 
         return mistakes
 # App Configuration
-st.set_page_config(page_title="EnglishCoach", layout="wide")
-st.title("EnglishCoach: Improve Your Communication Skills")
+st.set_page_config(page_title="EnglishCoach 2.0", layout="wide")
+st.title("EnglishCoach 2.0: Improve Your Communication Skills")
 st.write("Unlock Your English Potential with Personalized Feedback!")
 
 # Sidebar for Navigation
@@ -100,19 +140,15 @@ def display_writing_plan(plan_days, topics):
                 st.write(f"**Feedback**: {feedback}")
 
 
-
-
-
 # Home Navigation
 if page == "Home":
-    st.header("Welcome to EnglishCoach")
-    st.write("This platform is designed to assist you in improving your English communication skills through personalized feedback and structured writing plans.")
+    st.write("This platform is designed to help you enhance your English communication skills through personalized feedback and structured learning plans. Whether you're preparing for exams like IELTS, PTE, or DET, or simply looking to improve your English fluency, this app provides targeted guidance to boost your confidence in both writing and speaking.")
 
 # Writing Module
 elif page == "Writing Module":
     st.header("Writing Module")
     st.write(""" 
-    **EnglishCoach** is designed to assist you in improving your English communication skills.
+    **EnglishCoach 2.0** is designed to assist you in improving your English communication skills.
     Choose a **Writing Plan** (30, 45, or 60 days) and practice writing on various topics. You’ll get real-time feedback.
     The key to mastering writing is consistency. Select a plan that fits your goals and start practicing today!
     """)
@@ -124,20 +160,17 @@ elif page == "Writing Module":
     with col1:
         st.write("### 30-Day Plan")
         st.write("Focused on basics: introduction, conclusion, argumentative, descriptive writing.")
-        if st.button("Explore 30-Day Plan"):
-            st.session_state.page = "30-Day Plan"
+      
             
     with col2:
         st.write("### 45-Day Plan")
         st.write("Expanded topics: deep-dive into opinion-based and analytical essays.")
-        if st.button("Explore 45-Day Plan"):
-            st.session_state.page = "45-Day Plan"
+        
             
     with col3:
         st.write("### 60-Day Plan")
         st.write("Comprehensive plan covering reports, summaries, and essay writing.")
-        if st.button("Explore 60-Day Plan"):
-            st.session_state.page = "60-Day Plan"
+        
 
     # Sub-navigation for Writing Plans
     writing_page = st.radio("Select Writing Plan", ["Home", "30-Day Plan", "45-Day Plan", "60-Day Plan"])
@@ -148,51 +181,154 @@ elif page == "Writing Module":
     elif writing_page == "30-Day Plan":
         st.write("### 30-Day Writing Plan")
         topics_30_day = [
-            "Technology and Social Media", "Environmental Issues", "Education Systems",
-            "Globalization and Culture", "Health and Wellness", "Economic Development",
-            "Science and Innovation", "Travel and Tourism", "Food and Nutrition", 
-            "Urbanization and Infrastructure", "Family Values and Relationships",
-            "Cultural Diversity and Exchange", "Social Media Ethics", "Human Rights and Equality",
-            "Traditional vs. Modern Practices", "Community Service and Volunteerism",
-            "Language and Identity", "Immigration and Integration", "Social Justice and Activism",
-            "Generational Differences", "The Impact of Artificial Intelligence",
-            "Benefits and Drawbacks of Social Media", "Should University Education be Free?",
-            "The Role of Government in Public Health", "Pros and Cons of Standardized Testing",
-            "The Influence of Celebrity Culture", "Is Climate Change a Global Emergency?",
-            "The Ethics of Animal Testing", "Should Schools Prioritize STEM Education?"
-        ]
+            "The Role of Media in Shaping Public Opinion",
+            "Sustainable Practices for Environmental Conservation",
+            "The Future of Education: Online vs. Traditional Classrooms",
+            "Cultural Impacts of Rapid Technological Advancement",
+            "Challenges and Solutions for Global Healthcare Accessibility",
+            "Social Justice Movements: Impact and Future Prospects",
+            "Globalization: Its Influence on Local Cultures and Economies",
+            "The Rise of Youth Activism: Drivers and Effects",
+            "The Importance of Mental Health in Modern Society",
+            "Climate Change Policies: Are Governments Doing Enough?",
+            "Artificial Intelligence: Balancing Innovation with Ethical Responsibility",
+            "The Future of Work: Remote vs. Office Environments",
+            "Civic Responsibility: The Role of Citizens in a Democracy",
+            "Digital Privacy and Security: Protecting Personal Information Online",
+            "Achieving the Sustainable Development Goals: A Global Effort",
+            "Promoting Gender Equality in the Workplace",
+            "Ensuring Food Security in a Globalized World",
+            "How Technology is Transforming Education: Opportunities and Risks",
+            "Building Stronger Communities: The Role of Local Initiatives",
+            "Art as a Tool for Social Change: Historical and Modern Perspectives",
+            "Crisis Management in the Face of Global Disasters",
+            "Data Privacy in the Age of Information: How Safe Are We?",
+            "The Influence of Social Media on Public Discourse",
+            "Renewable Energy: The Key to a Sustainable Future?",
+            "Public Health Policies: Lessons Learned from Global Pandemics",
+            "The Impact of Consumerism on the Environment and Society",
+            "Urban Development: Solutions for Overcrowded Cities",
+            "The Role of Sports in Building a Healthier Society",
+            "Diversity and Inclusion in the Workplace: Benefits and Challenges",
+            "The Future of Transportation: Innovations and Challenges"
+      ]
         display_writing_plan(30, topics_30_day)
 
     elif writing_page == "45-Day Plan":
         st.write("### 45-Day Writing Plan")
-        topics_45_day = [
-            "The Role of Media in Society", "Environmental Conservation", "The Future of Education",
-            "Cultural Impacts of Technology", "Healthcare Accessibility", "Social Justice Movements",
-            "The Impact of Globalization", "Youth Activism", "The Importance of Mental Health",
-            "Climate Change and Policy", "Artificial Intelligence and Ethics", "The Future of Work",
-            "Civic Responsibility and Engagement", "Digital Privacy and Security",
-            "Sustainable Development Goals", "Gender Equality", "Food Security",
-            "Technology in Education", "Community Building", "Art and Social Change",
-            "Crisis Management", "Data Privacy", "Social Media Influence", "Renewable Energy",
-            "Public Health Policies", "Consumerism", "Urban Development", "Sports and Society",
-            "Diversity and Inclusion", "Future of Transportation"
-        ]
+        topics_45_day = topics =  [
+          "The Role of Media in Shaping Public Opinion",
+          "Sustainable Practices for Environmental Conservation",
+          "The Future of Education: Online vs. Traditional Classrooms",
+          "Cultural Impacts of Rapid Technological Advancement",
+          "Challenges and Solutions for Global Healthcare Accessibility",
+          "Social Justice Movements: Impact and Future Prospects",
+          "Globalization: Its Influence on Local Cultures and Economies",
+          "The Rise of Youth Activism: Drivers and Effects",
+          "The Importance of Mental Health in Modern Society",
+          "Climate Change Policies: Are Governments Doing Enough?",
+          "Artificial Intelligence: Balancing Innovation with Ethical Responsibility",
+          "The Future of Work: Remote vs. Office Environments",
+          "Civic Responsibility: The Role of Citizens in a Democracy",
+          "Digital Privacy and Security: Protecting Personal Information Online",
+          "Achieving the Sustainable Development Goals: A Global Effort",
+          "Promoting Gender Equality in the Workplace",
+          "Ensuring Food Security in a Globalized World",
+          "How Technology is Transforming Education: Opportunities and Risks",
+          "Building Stronger Communities: The Role of Local Initiatives",
+          "Art as a Tool for Social Change: Historical and Modern Perspectives",
+          "Crisis Management in the Face of Global Disasters",
+          "Data Privacy in the Age of Information: How Safe Are We?",
+          "The Influence of Social Media on Public Discourse",
+          "Renewable Energy: The Key to a Sustainable Future?",
+          "Public Health Policies: Lessons Learned from Global Pandemics",
+          "The Impact of Consumerism on the Environment and Society",
+          "Urban Development: Solutions for Overcrowded Cities",
+          "The Role of Sports in Building a Healthier Society",
+          "Diversity and Inclusion in the Workplace: Benefits and Challenges",
+          "The Future of Transportation: Innovations and Challenges",
+          "The Digital Divide: Addressing Inequality in Access to Technology",
+          "Ethical Considerations in Gene Editing Technologies",
+          "The Impact of Automation on Job Markets",
+          "Water Scarcity: A Global Challenge",
+          "Green Architecture: Designing for a Sustainable Future",
+          "Impact of Online Learning on Education Systems",
+          "The Role of Governments in Tackling Income Inequality",
+          "Balancing Economic Growth with Environmental Protection",
+          "Mental Health Support Systems in the Workplace",
+          "The Rise of Freelancing: Impacts on Traditional Employment",
+          "The Role of Public Spaces in Community Well-being",
+          "Addressing Misinformation in the Digital Age",
+          "The Influence of Pop Culture on Social Values",
+          "Cybersecurity Threats in a Globalized World",
+          "The Future of Energy: Exploring Nuclear and Hydrogen Power"
+      ]
+
+
         display_writing_plan(45, topics_45_day)
 
     elif writing_page == "60-Day Plan":
         st.write("### 60-Day Writing Plan")
-        topics_60_day = [
-            "Impact of Technology on Society", "Environmental Sustainability", "Ethics of Genetic Engineering",
-            "Artificial Intelligence in Daily Life", "Media Influence on Public Opinion", "Political Polarization",
-            "Crisis and Recovery", "Future of Renewable Energy", "Intergenerational Dialogue",
-            "Consumer Rights", "Racial Equality", "Global Health Issues", "The Role of Art in Society",
-            "History of Social Movements", "International Relations and Peace", "Digital Transformation",
-            "Public vs. Private Education", "Corporate Responsibility", "Urban vs. Rural Living",
-            "Future of Work in a Digital Age", "Mental Health in the Workplace", "Transnationalism",
-            "Cultural Heritage and Identity", "The Ethics of Surveillance", "Challenges of Globalization",
-            "Crisis in Democracy", "Digital Economy", "Sustainable Agriculture", "Human Rights in the Digital Age",
-            "Technology and the Future of Education", "Civic Engagement in the 21st Century"
-        ]
+        topics_60_day = topics= topics = [
+        "The Role of Media in Shaping Public Opinion",
+        "Sustainable Practices for Environmental Conservation",
+        "The Future of Education: Online vs. Traditional Classrooms",
+        "Cultural Impacts of Rapid Technological Advancement",
+        "Challenges and Solutions for Global Healthcare Accessibility",
+        "Social Justice Movements: Impact and Future Prospects",
+        "Globalization: Its Influence on Local Cultures and Economies",
+        "The Rise of Youth Activism: Drivers and Effects",
+        "The Importance of Mental Health in Modern Society",
+        "Climate Change Policies: Are Governments Doing Enough?",
+        "Artificial Intelligence: Balancing Innovation with Ethical Responsibility",
+        "The Future of Work: Remote vs. Office Environments",
+        "Civic Responsibility: The Role of Citizens in a Democracy",
+        "Digital Privacy and Security: Protecting Personal Information Online",
+        "Achieving the Sustainable Development Goals: A Global Effort",
+        "Promoting Gender Equality in the Workplace",
+        "Ensuring Food Security in a Globalized World",
+        "How Technology is Transforming Education: Opportunities and Risks",
+        "Building Stronger Communities: The Role of Local Initiatives",
+        "Art as a Tool for Social Change: Historical and Modern Perspectives",
+        "Crisis Management in the Face of Global Disasters",
+        "Data Privacy in the Age of Information: How Safe Are We?",
+        "The Influence of Social Media on Public Discourse",
+        "Renewable Energy: The Key to a Sustainable Future?",
+        "Public Health Policies: Lessons Learned from Global Pandemics",
+        "The Impact of Consumerism on the Environment and Society",
+        "Urban Development: Solutions for Overcrowded Cities",
+        "The Role of Sports in Building a Healthier Society",
+        "Diversity and Inclusion in the Workplace: Benefits and Challenges",
+        "The Future of Transportation: Innovations and Challenges",
+        "The Digital Divide: Addressing Inequality in Access to Technology",
+        "Ethical Considerations in Gene Editing Technologies",
+        "The Impact of Automation on Job Markets",
+        "Water Scarcity: A Global Challenge",
+        "Green Architecture: Designing for a Sustainable Future",
+        "Impact of Online Learning on Education Systems",
+        "The Role of Governments in Tackling Income Inequality",
+        "Balancing Economic Growth with Environmental Protection",
+        "Mental Health Support Systems in the Workplace",
+        "The Rise of Freelancing: Impacts on Traditional Employment",
+        "The Role of Public Spaces in Community Well-being",
+        "Addressing Misinformation in the Digital Age",
+        "The Influence of Pop Culture on Social Values",
+        "Cybersecurity Threats in a Globalized World",
+        "The Future of Energy: Exploring Nuclear and Hydrogen Power",
+        "Ethical Dilemmas in Business: Profit vs. Social Responsibility",
+        "The Importance of Multilingualism in a Globalized World",
+        "Space Exploration: Benefits and Challenges for Humanity",
+        "The Role of NGOs in Solving Global Crises",
+        "Improving Urban Mobility Through Smart Cities",
+        "Human Rights in the Age of Global Politics",
+        "The Impact of Digital Currencies on Traditional Banking",
+        "The Role of Education in Fostering Innovation",
+        "Mental Health in the Digital Age: Addressing New Challenges",
+        "Women in Leadership: Progress and Remaining Barriers",
+        "Addressing Climate Refugees: Legal and Moral Obligations",
+        "Artificial Intelligence in Healthcare: Opportunities and Risks",
+        "The Impact of Global Tourism on Local Economies"
+    ]  
         display_writing_plan(60, topics_60_day)
 
 # Speaking Module
@@ -200,64 +336,55 @@ elif page == "Speaking Module":
     st.header("Speaking Module")
 
     # Speaking options
-    speaking_option = st.radio("Choose Speaking Mode", ["Speak in Real-Time", "Submit Audio for Feedback"])
+    option = st.radio("Choose an option:", ("Speak in Real Time", "Submit Audio for feedback"))
 
-    if speaking_option == "Speak in Real-Time":
-        st.write("Speak on a topic and get real-time feedback.")
-        st.warning("This feature is under development.")
-    elif speaking_option == "Submit Audio for Feedback":
-        st.write("Submit your speech recording for feedback.")
-        uploaded_file = st.file_uploader("Choose an audio file...", type=["wav", "mp3"])
-        if uploaded_file is not None:        
-            # Read the content of the uploaded file
-            file_content = uploaded_file.read()
+    audio_file = None
+    audio_bytes = None
 
-            # Create a transcription of the audio file
-            transcription = client.audio.transcriptions.create(
-                file=(uploaded_file.name, file_content),  # Pass file name and content
-                model="whisper-large-v3-turbo",  # Required model to use for transcription
-                prompt="Specify context or spelling",  # Optional
-                response_format="json",  # Optional
-                language="en",  # Optional
-                temperature=0.0  # Optional
-            )
+    if option == "Submit Audio for feedback":
+        audio_file = st.file_uploader("Upload your audio file", type=['wav', 'mp3', 'ogg'])
+        if audio_file is not None:
+            st.audio(audio_file, format=f"audio/{audio_file.type.split('/')[-1]}")
+    else:
+        st.write("Click the button below to start recording your voice:")
+        audio_bytes = audio_recorder()
+        if audio_bytes:
+            st.audio(audio_bytes, format="audio/wav")
 
-            # Print the transcription text
-            st.write("Original Text:")
-            st.write(transcription.text)
-            input_text = transcription.text
+    if st.button("Get Feedback"):
+        if (option == "Submit Audio for feedback" and audio_file is not None) or (option == "Speak in Real Time" and audio_bytes is not None):
+            # Save audio to a temporary file
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+                if option == "Submit Audio for feedback":
+                    tmp_file.write(audio_file.getvalue())
+                else:
+                    tmp_file.write(audio_bytes)
+                tmp_file_path = tmp_file.name
 
-            # Initialize the Grammar Corrector
-            corrector = GrammarCorrector()
-            corrector.report_mistakes(input_text)
+            try:
+                # Transcribe audio
+                transcription = transcribe_audio(tmp_file_path)
+                st.subheader("Transcription:")
+                st.write(transcription)
 
-            # Initialize the client with your API key
-            client = Groq(api_key="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")
-            retrieved_content = "I am A1 user"
+                # Get feedback
+                feedback = get_feedback(transcription)
+                st.subheader("Feedback:")
+                st.write(feedback)
 
-            # Use the retrieved content as context for the chat completion
-            chat_completion = client.chat.completions.create(
-                messages=[
-                    {"role": "system", "content": "You have to change the sentence according to English standards, but do not add any new sentence. Only change the input provided. If the user is A1 level, return output for beginners. A2 for average, and A3 for advanced."},
-                    {"role": "user", "content": retrieved_content},
-                    {"role": "user", "content": input_text},
-                ],
-                model="llama3-70b-8192",
-                temperature=0.5,
-                max_tokens=1024,
-                top_p=1,
-                stop=None,
-                stream=False,
-            )
+                # Convert feedback to audio
+                audio_feedback = text_to_speech(feedback)
+                st.audio(audio_feedback)
 
-            # Get the output from the model
-            model_output = chat_completion.choices[0].message.content
-            feedback = model_output
+            except Exception as e:
+                st.error(f"An error occurred: {str(e)}")
 
-            if feedback:
-                st.success("Your writing has been submitted! Here’s the feedback:")
-                st.write(f"**Feedback**: {feedback}")
+            finally:
+                # Clean up temporary file
+                os.unlink(tmp_file_path)
+        else:
+            st.warning("Please upload or record an audio file before requesting feedback.")
 
 # Footer
 st.sidebar.markdown("---")
-st.sidebar.write("Developed by Visionary Squad.")
+st.sidebar.write("Developed by BotBuilders.")
