@@ -5,10 +5,11 @@ from gtts import gTTS
 import streamlit as st
 from groq import Groq
 
-# Load Whisper model for transcription with error handling
+# Attempt to load Whisper model for transcription with error handling
 try:
+    # Attempt to load the model; ensure this method exists
     model = whisper.load_model("base")
-except AttributeError as e:
+except Exception as e:  # Catch all exceptions
     st.error(f"Error loading Whisper model: {e}")
     model = None  # Handle the case when model loading fails
 
@@ -61,6 +62,5 @@ if audio_file is not None:
     st.write(response_text)
 
     # Provide the audio output
-    st.audio(output_audio)
-
-
+    if output_audio:
+        st.audio(output_audio)
