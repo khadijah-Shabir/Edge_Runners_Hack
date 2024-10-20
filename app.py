@@ -6,7 +6,7 @@ from groq import Groq
 
 # Set up Groq API client (ensure GROQ_API_KEY is set in your environment)
 GROQ_API_KEY = "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"
-Client=Groq(api_key=GROQ_API_KEY)
+client=Groq(api_key=GROQ_API_KEY)
 
 # Function to get the LLM response from Groq
 def get_llm_response(user_input):
