@@ -5,12 +5,12 @@ from gtts import gTTS
 import streamlit as st
 from groq import Groq
 
-# Load Whisper model for transcription
+# Load Whisper model for transcription with error handling
 try:
-    model = whisper.load_model("base")  # Ensure "base" is a valid model name
-except Exception as e:
-    st.error(f"Error loading Whisper model: {str(e)}")
-    st.stop()
+    model = whisper.load_model("base")
+except AttributeError as e:
+    st.error(f"Error loading Whisper model: {e}")
+    model = None  # Handle the case when model loading fails
 
 # Set up Groq API client (ensure GROQ_API_KEY is set in your environment)
 GROQ_API_KEY = "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"
@@ -24,44 +24,43 @@ def get_llm_response(user_input):
     return chat_completion.choices[0].message.content
 
 # Function to convert text to speech using gTTS
-def text_to_speech(text):
+def text_to_speech(text, output_audio="output_audio.mp3"):
     tts = gTTS(text)
-    output_audio = "output_audio.mp3"
     tts.save(output_audio)
     return output_audio
 
-# Streamlit app layout
+# Main chatbot function to handle audio input and output
+def chatbot(audio):
+    if model is None:
+        return "Model not available", None
+
+    # Step 1: Transcribe the audio using Whisper
+    result = model.transcribe(audio)
+    user_text = result["text"]
+
+    # Step 2: Get LLM response from Groq
+    response_text = get_llm_response(user_text)
+
+    # Step 3: Convert the response text to speech
+    output_audio = text_to_speech(response_text)
+
+    return response_text, output_audio
+
+# Streamlit UI setup
 st.title("Audio Chatbot")
 
-# Step 1: Upload audio file
+# Upload audio file
 audio_file = st.file_uploader("Upload an audio file", type=["wav", "mp3"])
 
 if audio_file is not None:
-    # Step 2: Transcribe the audio using Whisper
-    with st.spinner("Transcribing audio..."):
-        try:
-            result = model.transcribe(audio_file)
-            user_text = result["text"]
-            st.text_area("Transcribed Text", user_text, height=200)
-        except Exception as e:
-            st.error(f"Error transcribing audio: {str(e)}")
+    # Process the uploaded audio file
+    response_text, output_audio = chatbot(audio_file)
 
-    # Step 3: Get LLM response from Groq
-    if user_text:
-        with st.spinner("Getting response from LLM..."):
-            try:
-                response_text = get_llm_response(user_text)
-                st.text_area("LLM Response", response_text, height=200)
-            except Exception as e:
-                st.error(f"Error getting response from LLM: {str(e)}")
+    # Display the response text
+    st.subheader("Response:")
+    st.write(response_text)
 
-        # Step 4: Convert the response text to speech
-        with st.spinner("Generating audio response..."):
-            try:
-                output_audio = text_to_speech(response_text)
-                st.audio(output_audio, format="audio/mp3")
-            except Exception as e:
-                st.error(f"Error generating audio response: {str(e)}")
+    # Provide the audio output
+    st.audio(output_audio)
 
-# Optional: Add a footer or other content
-st.write("Upload an audio file to chat with the AI!")
+
