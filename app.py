@@ -7,14 +7,16 @@ from groq import Groq
 
 # Attempt to load Whisper model for transcription with error handling
 try:
-    # Attempt to load the model; ensure this method exists
-    model = whisper.load_model("base")
+    if hasattr(whisper, 'load_model'):
+        model = whisper.load_model("base")
+    else:
+        raise AttributeError("The load_model method is not available in the whisper module.")
 except Exception as e:  # Catch all exceptions
     st.error(f"Error loading Whisper model: {e}")
     model = None  # Handle the case when model loading fails
 
 # Set up Groq API client (ensure GROQ_API_KEY is set in your environment)
-GROQ_API_KEY = "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"
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 # Function to get the LLM response from Groq
 def get_llm_response(user_input):
